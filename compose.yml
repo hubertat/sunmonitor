@@ -1,0 +1,10 @@
+services:
+  sun-checker:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "2911:2911"
+    environment:
+      HTTP_LISTEN_PORT: 2911
+      LOCATION_LATITUDE: 53.19
+      LOCATION_LONGITUDE: 19.76
