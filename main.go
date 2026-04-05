@@ -18,6 +18,7 @@ var LAT float64 = 53.19
 var LON float64 = 19.76
 
 func main() {
+	log.Println("## sunmonitor ☀️ starting ##")
 	port, _ := strconv.Atoi(os.Getenv("HTTP_LISTEN_PORT"))
 	if port == 0 {
 		port = defaultHttpListenPort
@@ -26,10 +27,19 @@ func main() {
 	LAT, _ = strconv.ParseFloat(os.Getenv("LOCATION_LATITUDE"), 64)
 	LON, _ = strconv.ParseFloat(os.Getenv("LOCATION_LONGITUDE"), 64)
 
+	log.Println("config loaded: LAT=", LAT, " LON=", LON)
+	log.Println("listening on port", port)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/suncheck", handleSunIsDownCheck)
 	mux.HandleFunc("/suncheck/after/{afterminutes}", handleSunIsDownCheck)
 	mux.HandleFunc("/suncheck/after/{afterminutes}/before/{beforeminutes}", handleSunIsDownCheck)
+
+	log.Println("server will use following path patterns:")
+	log.Println("  - /suncheck: no delay/accelerate")
+	log.Println("  - /suncheck/after/{afterminutes}: delay after sunset")
+	log.Println("  - /suncheck/after/{afterminutes}/before/{beforeminutes}: delay after sunset, accelerate before sunrise")
+	log.Println("## sunmonitor ☀️ ready ##")
 
 	s := http.Server{
 		Addr:         fmt.Sprintf(":%d", port),
@@ -52,9 +62,9 @@ func handleSunIsDownCheck(w http.ResponseWriter, req *http.Request) {
 	accelerateBeforeSunrise, _ := strconv.Atoi(req.PathValue("beforeminutes"))
 
 	if checkIfSunIsDown(delayAfterSunset, accelerateBeforeSunrise) {
-		io.WriteString(w, "YES")
+		io.WriteString(w, "DARK")
 	} else {
-		io.WriteString(w, "NO")
+		io.WriteString(w, "SUN IS UP")
 	}
 
 }
